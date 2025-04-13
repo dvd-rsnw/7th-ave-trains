@@ -1,7 +1,8 @@
 fastapi==0.109.0
 uvicorn==0.27.0
 httpx==0.26.0
-google-transit==0.0.4
 pydantic==2.6.0
 pillow==10.2.0  # Required for LED matrix image handling
-rpi-gpio==0.7.1  # Required for LED matrix GPIO access 
+rpi-gpio==0.7.1  # Required for LED matrix GPIO access
+gtfs-realtime-bindings==1.0.0  # For parsing MTA GTFS data
+protobuf==4.25.2  # Required by GTFS 

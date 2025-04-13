@@ -23,19 +23,24 @@ sudo apt-get install -y python3-pip python3-venv git build-essential python3-dev
 # Clone and build rpi-rgb-led-matrix
 echo "Setting up RGB LED Matrix library..."
 cd ~
-if [ ! -d "rpi-rgb-led-matrix" ]; then
-    git clone https://github.com/hzeller/rpi-rgb-led-matrix.git
+if [ -d "rpi-rgb-led-matrix" ]; then
+    echo "Removing existing RGB Matrix library..."
+    sudo rm -rf rpi-rgb-led-matrix
 fi
 
+git clone https://github.com/hzeller/rpi-rgb-led-matrix.git
 cd ~/rpi-rgb-led-matrix
+
 # Build with optimizations
-CFLAGS="-O3" make -C lib
+echo "Building RGB Matrix C++ library..."
+sudo make clean
+sudo CFLAGS="-O3" make -C lib
 
 # Build Python bindings with specific RPi 4 flags
+echo "Building Python bindings..."
 cd ~/rpi-rgb-led-matrix/bindings/python
-make clean  # Clean any previous builds
-make build-python HARDWARE_DESC=2 PYTHON=$(which python3) CFLAGS="-O3"
-sudo make install-python
+sudo make clean
+sudo make build-python HARDWARE_DESC=2 PYTHON=$(which python3) CFLAGS="-O3"
 
 # Setup virtual environment and install dependencies
 echo "Setting up Python environment and dependencies..."
@@ -45,35 +50,38 @@ check_project_dir
 # Remove existing venv if it exists
 if [ -d ".venv" ]; then
     echo "Removing existing virtual environment..."
-    rm -rf .venv
+    sudo rm -rf .venv
 fi
 
 # Create new virtual environment
 echo "Creating new virtual environment..."
-python3 -m venv .venv
+sudo python3 -m venv .venv
+sudo chown -R $USER:$USER .venv
 
 # Configure virtual environment to show prompt
-cat >> .venv/bin/activate << EOL
+sudo cat >> .venv/bin/activate << EOL
 PS1="(.venv) \$PS1"
 EOL
 
 # Activate virtual environment and install dependencies
 echo "Installing Python dependencies..."
 source .venv/bin/activate
-pip install --upgrade pip wheel setuptools
-pip install -r requirements.txt
+sudo pip install --upgrade pip wheel setuptools
+sudo pip install -r requirements.txt
 
 # Install RGB Matrix Python module into virtual environment
 echo "Installing RGB Matrix Python module into virtual environment..."
 cd ~/rpi-rgb-led-matrix/bindings/python
-python3 setup.py build install
+sudo rm -rf build  # Clean any existing build with wrong permissions
+sudo python3 setup.py clean --all
+sudo -H pip3 install .
 
 # Return to project directory
 cd "$PROJECT_DIR"
 check_project_dir
 
 echo "Creating run script..."
-cat > run.sh << EOF
+sudo cat > run.sh << EOF
 #!/bin/bash
 
 # Check if running as root
@@ -108,10 +116,11 @@ kill \$API_PID
 EOF
 
 # Make run script executable
-chmod +x run.sh
+sudo chmod +x run.sh
+sudo chown $USER:$USER run.sh
 
 echo "Setup complete! To run the display:"
-echo "  cd ~/7th-ave-trains"
+echo "  cd $PROJECT_DIR"
 echo "  sudo ./run.sh"
 
 # Show virtual environment status
