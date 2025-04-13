@@ -22,7 +22,7 @@ Real-time LED matrix display showing F/G train arrival times at 7th Avenue stati
 
 1. Clone this repository:
 ```bash
-git clone https://github.com/yourusername/7th-ave-trains.git
+git clone https://github.com/dvd-rsnw/7th-ave-trains.git
 cd 7th-ave-trains
 ```
 
