@@ -1,9 +1,21 @@
 #!/bin/bash
 
+# Exit on error
+set -e
+
 # Function to check if we're in the right directory
 check_project_dir() {
     if [ ! -f "requirements.txt" ]; then
         echo "Error: requirements.txt not found. Make sure you're in the 7th-ave-trains directory."
+        echo "Current directory: $(pwd)"
+        exit 1
+    fi
+}
+
+# Function to check virtual environment
+check_venv() {
+    if [ ! -f ".venv/bin/pip" ]; then
+        echo "Error: Virtual environment not properly created. Missing pip."
         echo "Current directory: $(pwd)"
         exit 1
     fi
@@ -50,12 +62,21 @@ check_project_dir
 # Remove existing venv if it exists
 if [ -d ".venv" ]; then
     echo "Removing existing virtual environment..."
-    sudo rm -rf .venv
+    rm -rf .venv
 fi
 
 # Create new virtual environment
 echo "Creating new virtual environment..."
 python3 -m venv .venv
+
+# Verify virtual environment was created
+if [ ! -d ".venv" ]; then
+    echo "Error: Failed to create virtual environment"
+    exit 1
+fi
+
+# Make sure the virtual environment is accessible
+chmod -R 755 .venv
 
 # Configure virtual environment to show prompt
 cat >> .venv/bin/activate << EOL
@@ -65,15 +86,22 @@ EOL
 # Activate virtual environment and install dependencies
 echo "Installing Python dependencies..."
 source .venv/bin/activate
-.venv/bin/pip install --upgrade pip wheel setuptools
-.venv/bin/pip install -r requirements.txt
+check_venv
+
+# Ensure pip is available and upgrade it
+echo "Upgrading pip and installing basic tools..."
+python3 -m pip install --upgrade pip wheel setuptools
+
+echo "Installing project dependencies..."
+python3 -m pip install -r requirements.txt
 
 # Install RGB Matrix Python module into virtual environment
 echo "Installing RGB Matrix Python module into virtual environment..."
 cd ~/rpi-rgb-led-matrix/bindings/python
-sudo rm -rf build  # Clean any existing build with wrong permissions
-sudo python3 setup.py clean --all
-.venv/bin/pip install .
+sudo rm -rf build dist *.egg-info  # Clean any existing build artifacts
+python3 setup.py clean --all
+python3 setup.py build
+python3 setup.py install
 
 # Return to project directory
 cd "$PROJECT_DIR"
