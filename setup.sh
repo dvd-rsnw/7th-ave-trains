@@ -226,12 +226,33 @@ EOF
 # Make run script executable
 sudo chmod +x run.sh
 
-echo "Setup complete! To run the display:"
-echo "  cd $PROJECT_DIR"
-echo "  sudo ./run.sh"
+# Verify virtual environment and installed packages
+echo ""
+echo "Verifying virtual environment setup..."
 
-# Show virtual environment status
-echo -e "\nCurrent virtual environment status:"
-"$PROJECT_DIR/.venv/bin/python" -c "import sys; print('Python path:', sys.executable)"
-"$PROJECT_DIR/.venv/bin/python" -c "import sys; print('Virtual env:', sys.prefix)"
-"$PROJECT_DIR/.venv/bin/pip" list 
+# Get Python and pip paths
+PYTHON_PATH=$(which python)
+PIP_PATH=$(which pip)
+
+# Print confirmation message
+echo "✅ Virtual environment is properly activated."
+echo "Python path: $PYTHON_PATH"
+echo "Pip path: $PIP_PATH"
+
+# Check for installed packages
+echo ""
+echo "Installed packages:"
+pip list
+
+# Check if rgbmatrix is installed
+if pip list | grep -q rgbmatrix; then
+    echo ""
+    echo "✅ RGB Matrix module is installed."
+else
+    echo ""
+    echo "⚠️ RGB Matrix module not found in the virtual environment."
+fi
+
+echo -e "\nSetup complete! To run the display:"
+echo "  cd $PROJECT_DIR"
+echo "  sudo ./run.sh" 

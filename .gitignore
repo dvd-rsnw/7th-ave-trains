@@ -1,41 +1,37 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
+# Ignore compiled binaries and build artifacts for Raspberry Pi
+*.o
+*.out
+*.a
 *.so
-.Python
-.env
-#.venv
-#env/
-#venv/
-#ENV/
-#env.bak/
-#venv.bak/
-.python-version
+*.elf
+*.bin
+*.hex
+*.img
+*.map
 
-# IDE
+# Build directories
+build/
+dist/
+target/
+bin/
+obj/
+
+# Dependency directories
+lib/
+libs/
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Editor and system files
 .vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
+*~
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
 
-# Temporary or log files
-*.log
-*.tmp
-
-# Exclude Python compiled files (these need to be rebuilt)
+# Raspberry Pi specific
 __pycache__/
 *.py[cod]
-*$py.class
-*.so
-build/temp.*
-build/lib.* 
+*$py.class 
