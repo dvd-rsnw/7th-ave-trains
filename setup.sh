@@ -44,7 +44,10 @@ sudo apt-get install -y \
     libwebp-dev \
     libjpeg-dev \
     libpng-dev \
-    pkg-config
+    pkg-config \
+    python3-numpy \
+    python3-setuptools \
+    libatlas-base-dev
 
 # Clone and build rpi-rgb-led-matrix
 echo "Setting up RGB LED Matrix library..."
@@ -125,8 +128,20 @@ echo "Installing RGB Matrix Python module into virtual environment..."
 cd ~/rpi-rgb-led-matrix/bindings/python
 rm -rf build dist *.egg-info  # Clean any existing build artifacts
 python3 setup.py clean --all
+
+# Try a more direct approach to building and installing
+echo "Building and installing RGB Matrix module directly..."
+cd ~/rpi-rgb-led-matrix/bindings/python
+python3 -m pip install --upgrade numpy   # Ensure numpy is up to date
 CFLAGS="-O2 -fPIC" python3 setup.py build
-python3 setup.py install --user
+python3 -m pip install -e .
+
+# Fallback method if the above doesn't work
+if [ $? -ne 0 ]; then
+    echo "First installation method failed, trying alternate method..."
+    cd ~/rpi-rgb-led-matrix/bindings/python
+    python3 -m pip install -e .
+fi
 
 # Return to project directory
 cd "$PROJECT_DIR"
