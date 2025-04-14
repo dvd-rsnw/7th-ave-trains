@@ -62,7 +62,7 @@ cd ~/rpi-rgb-led-matrix
 echo "Building RGB Matrix C++ library..."
 cd ~/rpi-rgb-led-matrix/lib
 make clean
-export CFLAGS="-O3 -fomit-frame-pointer -funroll-loops"
+export CFLAGS="-O2 -fPIC"
 export CXXFLAGS="$CFLAGS"
 make -j4 RGB_LIB_DISTRIBUTION=1 HARDWARE_DESC=2
 
@@ -70,7 +70,7 @@ make -j4 RGB_LIB_DISTRIBUTION=1 HARDWARE_DESC=2
 echo "Building Python bindings..."
 cd ~/rpi-rgb-led-matrix/bindings/python
 make clean
-make build-python HARDWARE_DESC=2 PYTHON=$(which python3) CFLAGS="-O3 -fomit-frame-pointer -funroll-loops" RGB_LIB_DISTRIBUTION=1
+make build-python HARDWARE_DESC=2 PYTHON=$(which python3) CFLAGS="-O2 -fPIC" RGB_LIB_DISTRIBUTION=1
 
 if [ ! -f "build/lib."*"/rgbmatrix/_core."*".so" ]; then
     echo "Error: Failed to build RGB Matrix Python bindings"
@@ -125,7 +125,7 @@ echo "Installing RGB Matrix Python module into virtual environment..."
 cd ~/rpi-rgb-led-matrix/bindings/python
 rm -rf build dist *.egg-info  # Clean any existing build artifacts
 python3 setup.py clean --all
-CFLAGS="-O3 -fomit-frame-pointer -funroll-loops" python3 setup.py build
+CFLAGS="-O2 -fPIC" python3 setup.py build
 python3 setup.py install --user
 
 # Return to project directory
