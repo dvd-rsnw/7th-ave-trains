@@ -30,7 +30,7 @@ check_project_dir
 # Install system dependencies
 echo "Installing system dependencies..."
 sudo apt-get update
-sudo apt-get install -y python3-pip python3-venv python3-full git build-essential python3-dev python3-pillow
+sudo apt-get install -y python3-pip python3-venv python3-full git build-essential python3-dev python3-pillow gcc make
 
 # Clone and build rpi-rgb-led-matrix
 echo "Setting up RGB LED Matrix library..."
@@ -43,16 +43,26 @@ fi
 git clone https://github.com/hzeller/rpi-rgb-led-matrix.git
 cd ~/rpi-rgb-led-matrix
 
-# Build with optimizations
+# Build with optimizations for Raspberry Pi
 echo "Building RGB Matrix C++ library..."
+cd ~/rpi-rgb-led-matrix/lib
 sudo make clean
-sudo CFLAGS="-O3" make -C lib
+export CFLAGS="-O3 -fomit-frame-pointer -funroll-loops"
+export CXXFLAGS="$CFLAGS"
+sudo make -j4 RGB_LIB_DISTRIBUTION=1 HARDWARE_DESC=2
 
-# Build Python bindings with specific RPi 4 flags
+# Build Python bindings
 echo "Building Python bindings..."
 cd ~/rpi-rgb-led-matrix/bindings/python
 sudo make clean
-sudo make build-python HARDWARE_DESC=2 PYTHON=$(which python3) CFLAGS="-O3"
+sudo make build-python HARDWARE_DESC=2 PYTHON=$(which python3) CFLAGS="-O3 -fomit-frame-pointer -funroll-loops" RGB_LIB_DISTRIBUTION=1
+
+if [ ! -f "build/lib.linux-aarch64-cpython-*/rgbmatrix/_core.*.so" ]; then
+    echo "Error: Failed to build RGB Matrix Python bindings"
+    echo "Build directory contents:"
+    ls -R build/
+    exit 1
+fi
 
 # Setup virtual environment and install dependencies
 echo "Setting up Python environment and dependencies..."
@@ -100,7 +110,7 @@ echo "Installing RGB Matrix Python module into virtual environment..."
 cd ~/rpi-rgb-led-matrix/bindings/python
 sudo rm -rf build dist *.egg-info  # Clean any existing build artifacts
 python3 setup.py clean --all
-python3 setup.py build
+CFLAGS="-O3 -fomit-frame-pointer -funroll-loops" python3 setup.py build
 python3 setup.py install
 
 # Return to project directory
