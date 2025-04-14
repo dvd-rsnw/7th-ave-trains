@@ -12,15 +12,6 @@ check_project_dir() {
     fi
 }
 
-# Function to check virtual environment
-check_venv() {
-    if [ ! -f ".venv/bin/pip" ]; then
-        echo "Error: Virtual environment not properly created. Missing pip."
-        echo "Current directory: $(pwd)"
-        exit 1
-    fi
-}
-
 echo "Setting up 7th Ave Trains Display..."
 
 # Store the project directory
@@ -32,7 +23,6 @@ echo "Installing system dependencies..."
 sudo apt-get update
 sudo apt-get install -y \
     python3-pip \
-    python3-venv \
     python3-full \
     git \
     build-essential \
@@ -82,111 +72,27 @@ if [ ! -f "build/lib."*"/rgbmatrix/_core."*".so" ]; then
     exit 1
 fi
 
-# Setup virtual environment and install dependencies
-echo "Setting up Python environment and dependencies..."
-cd "$PROJECT_DIR"
-check_project_dir
-
-# Remove existing venv if it exists
-if [ -d ".venv" ]; then
-    echo "Removing existing virtual environment..."
-    sudo rm -rf .venv
-fi
-
-# Create new virtual environment
-echo "Creating new virtual environment..."
-sudo python3 -m venv .venv
-
-# Verify virtual environment was created
-if [ ! -d ".venv" ]; then
-    echo "Error: Failed to create virtual environment"
-    exit 1
-fi
-
-# Make sure the virtual environment is accessible
-sudo chmod -R 755 .venv
-
-# Configure virtual environment to show prompt
-cat >> .venv/bin/activate << EOL
-PS1="(.venv) \$PS1"
-EOL
-
-# Activate virtual environment and install dependencies
-echo "Installing Python dependencies..."
-source .venv/bin/activate
-check_venv
-
-# Ensure pip is available and upgrade it
-echo "Upgrading pip and installing basic tools..."
-"$PROJECT_DIR/.venv/bin/pip" install --upgrade pip wheel setuptools
-
+# Install project dependencies
 echo "Installing project dependencies..."
-"$PROJECT_DIR/.venv/bin/pip" install -r requirements.txt
+cd "$PROJECT_DIR"
+pip3 install -r requirements.txt
 
-# Install RGB Matrix Python module into virtual environment
-echo "Installing RGB Matrix Python module into virtual environment..."
+# Install RGB Matrix Python module
+echo "Installing RGB Matrix Python module..."
 cd ~/rpi-rgb-led-matrix/bindings/python
 sudo rm -rf build dist *.egg-info  # Clean any existing build artifacts
-"$PROJECT_DIR/.venv/bin/python" setup.py clean --all
-
-# Try manual build approach with specific compilation flags
-echo "Building RGB Matrix module with manual compilation..."
-cd ~/rpi-rgb-led-matrix/bindings/python
 
 # Set specific build flags for aarch64 architecture
 export CFLAGS="-O2 -fPIC"
 export CXXFLAGS="$CFLAGS"
 export LDFLAGS=""
 
-# Build the core components directly
-echo "Building core components directly..."
-"$PROJECT_DIR/.venv/bin/pip" install --upgrade numpy wheel
-
-# Try specific build approach for aarch64
-if [[ $(uname -m) == "aarch64" ]]; then
-  echo "Using aarch64-specific build options..."
-  # Build directly using the virtual environment's Python
-  "$PROJECT_DIR/.venv/bin/python" setup.py build_ext --inplace
-  "$PROJECT_DIR/.venv/bin/python" setup.py build --build-lib=build/lib
-  
-  # Copy results to a specific directory where Python can find it
-  sudo mkdir -p build/lib/rgbmatrix
-  sudo cp -r rgbmatrix/*.so build/lib/rgbmatrix/ 2>/dev/null || true
-  sudo cp -r build/lib*/rgbmatrix/*.so build/lib/rgbmatrix/ 2>/dev/null || true
-  
-  # Install directly to the virtual environment
-  "$PROJECT_DIR/.venv/bin/pip" install -e .
-else
-  # Regular build for non-aarch64
-  "$PROJECT_DIR/.venv/bin/python" setup.py build
-  "$PROJECT_DIR/.venv/bin/pip" install -e .
-fi
-
-# Fallback method if the above doesn't work
-if [ $? -ne 0 ]; then
-    echo "Standard installation methods failed, trying direct copy approach..."
-    
-    # Try a very direct approach - build and copy
-    cd ~/rpi-rgb-led-matrix/bindings/python
-    sudo CFLAGS="-O2 -fPIC" python3 setup.py build
-    
-    # Find the built files
-    BUILT_FILES=$(find build -name "*.so" -type f)
-    
-    if [ -n "$BUILT_FILES" ]; then
-        echo "Found built files, copying directly to virtual environment site-packages..."
-        SITE_PACKAGES=$("$PROJECT_DIR/.venv/bin/python" -c "import site; print(site.getsitepackages()[0])")
-        sudo mkdir -p "$SITE_PACKAGES/rgbmatrix"
-        sudo cp $BUILT_FILES "$SITE_PACKAGES/rgbmatrix/"
-        echo "Copied files to $SITE_PACKAGES/rgbmatrix/"
-    else
-        echo "No built files found to copy"
-    fi
-fi
+# Install the RGB Matrix module
+pip3 install --upgrade numpy wheel
+pip3 install -e .
 
 # Return to project directory
 cd "$PROJECT_DIR"
-check_project_dir
 
 echo "Creating run script..."
 cat > run.sh << EOF
@@ -204,12 +110,9 @@ if [ ! -f "requirements.txt" ]; then
     exit 1
 fi
 
-# Activate virtual environment with full path and preserve environment
-source "\$PWD/.venv/bin/activate"
-
 # Start the API server in the background
 echo "Starting API server..."
-"\$PWD/.venv/bin/python" main.py &
+python3 main.py &
 API_PID=\$!
 
 # Wait a moment for the API to start
@@ -217,7 +120,7 @@ sleep 2
 
 # Start the LED controller
 echo "Starting LED display controller..."
-"\$PWD/.venv/bin/python" led_matrix_controller.py
+python3 led_matrix_controller.py
 
 # When LED controller exits, kill the API server
 kill \$API_PID
@@ -226,33 +129,12 @@ EOF
 # Make run script executable
 sudo chmod +x run.sh
 
-# Verify virtual environment and installed packages
-echo ""
-echo "Verifying virtual environment setup..."
-
-# Get Python and pip paths
-PYTHON_PATH=$(which python)
-PIP_PATH=$(which pip)
-
-# Print confirmation message
-echo "✅ Virtual environment is properly activated."
-echo "Python path: $PYTHON_PATH"
-echo "Pip path: $PIP_PATH"
-
-# Check for installed packages
-echo ""
-echo "Installed packages:"
-pip list
-
-# Check if rgbmatrix is installed
-if pip list | grep -q rgbmatrix; then
-    echo ""
-    echo "✅ RGB Matrix module is installed."
-else
-    echo ""
-    echo "⚠️ RGB Matrix module not found in the virtual environment."
-fi
-
+# Verify installation
 echo -e "\nSetup complete! To run the display:"
 echo "  cd $PROJECT_DIR"
-echo "  sudo ./run.sh" 
+echo "  sudo ./run.sh"
+
+# Verify RGB Matrix installation
+echo ""
+echo "Verifying RGB Matrix installation..."
+python3 -c "import rgbmatrix; print('RGB Matrix installed successfully')" 

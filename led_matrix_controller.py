@@ -4,6 +4,8 @@ import time
 from typing import Tuple, Dict
 from styles import F_TRAIN_COLOR, G_TRAIN_COLOR
 import sys
+import httpx
+
 
 # Constants for layout
 PANEL_WIDTH = 64  # Width of a single panel
@@ -105,58 +107,58 @@ if platform.system() == "Linux":
         for i in range(-radius, radius + 1):
             for j in range(-radius, radius + 1):
                 if i*i + j*j <= radius*radius:
-                    graphics.DrawPixel(matrix, x + i, y + j, color)
+                    graphics.SetPixel(matrix, x + i, y + j, color)
 
     def draw_diamond(x: int, y: int, radius: int, color):
         """Draw a filled diamond"""
         for i in range(-radius, radius + 1):
             for j in range(-radius, radius + 1):
                 if abs(i) + abs(j) <= radius:
-                    graphics.DrawPixel(matrix, x + i, y + j, color)
+                    graphics.SetPixel(matrix, x + i, y + j, color)
 
     def draw_thick_F(x: int, y: int, color):
         """Draw a 2px thick F letter"""
         # Vertical line
         for i in range(6):  # Height of 6px
-            graphics.DrawPixel(matrix, x, y + i, color)
-            graphics.DrawPixel(matrix, x + 1, y + i, color)
+            graphics.SetPixel(matrix, x, y + i, color)
+            graphics.SetPixel(matrix, x + 1, y + i, color)
         
         # Top horizontal line
         for i in range(4):  # Width of 4px
-            graphics.DrawPixel(matrix, x + i, y, color)
-            graphics.DrawPixel(matrix, x + i, y + 1, color)
+            graphics.SetPixel(matrix, x + i, y, color)
+            graphics.SetPixel(matrix, x + i, y + 1, color)
         
         # Middle horizontal line
         for i in range(3):  # Width of 3px
-            graphics.DrawPixel(matrix, x + i, y + 3, color)
-            graphics.DrawPixel(matrix, x + i, y + 4, color)
+            graphics.SetPixel(matrix, x + i, y + 3, color)
+            graphics.SetPixel(matrix, x + i, y + 4, color)
 
     def draw_thick_G(x: int, y: int, color):
         """Draw a 2px thick G letter"""
         # Top curve
         for i in range(4):  # Width of 4px
-            graphics.DrawPixel(matrix, x + 1 + i, y, color)
-            graphics.DrawPixel(matrix, x + 1 + i, y + 1, color)
+            graphics.SetPixel(matrix, x + 1 + i, y, color)
+            graphics.SetPixel(matrix, x + 1 + i, y + 1, color)
         
         # Left vertical line
         for i in range(6):  # Height of 6px
-            graphics.DrawPixel(matrix, x, y + 1 + i, color)
-            graphics.DrawPixel(matrix, x + 1, y + 1 + i, color)
+            graphics.SetPixel(matrix, x, y + 1 + i, color)
+            graphics.SetPixel(matrix, x + 1, y + 1 + i, color)
         
         # Bottom curve
         for i in range(4):  # Width of 4px
-            graphics.DrawPixel(matrix, x + 1 + i, y + 6, color)
-            graphics.DrawPixel(matrix, x + 1 + i, y + 7, color)
+            graphics.SetPixel(matrix, x + 1 + i, y + 6, color)
+            graphics.SetPixel(matrix, x + 1 + i, y + 7, color)
         
         # Right vertical stub
         for i in range(3):  # Height of 3px
-            graphics.DrawPixel(matrix, x + 4, y + 4 + i, color)
-            graphics.DrawPixel(matrix, x + 5, y + 4 + i, color)
+            graphics.SetPixel(matrix, x + 4, y + 4 + i, color)
+            graphics.SetPixel(matrix, x + 5, y + 4 + i, color)
         
         # Middle horizontal line
         for i in range(2):  # Width of 2px
-            graphics.DrawPixel(matrix, x + 3, y + 4, color)
-            graphics.DrawPixel(matrix, x + 3, y + 5, color)
+            graphics.SetPixel(matrix, x + 3, y + 4, color)
+            graphics.SetPixel(matrix, x + 3, y + 5, color)
 
     def render_train_line(section: int, train_data: dict):
         """Render a train line with its text in the specified section"""
@@ -256,7 +258,6 @@ else:
 
 # Polling loop (shared for both real & mock)
 async def poll_and_display():
-    import httpx  # imported here so it doesn't crash early on macOS
     while True:
         try:
             async with httpx.AsyncClient() as client:
