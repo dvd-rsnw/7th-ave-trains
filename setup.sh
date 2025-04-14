@@ -30,7 +30,21 @@ check_project_dir
 # Install system dependencies
 echo "Installing system dependencies..."
 sudo apt-get update
-sudo apt-get install -y python3-pip python3-venv python3-full git build-essential python3-dev python3-pillow gcc make
+sudo apt-get install -y \
+    python3-pip \
+    python3-venv \
+    python3-full \
+    git \
+    build-essential \
+    python3-dev \
+    python3-pillow \
+    gcc \
+    make \
+    libgraphicsmagick++-dev \
+    libwebp-dev \
+    libjpeg-dev \
+    libpng-dev \
+    pkg-config
 
 # Clone and build rpi-rgb-led-matrix
 echo "Setting up RGB LED Matrix library..."
@@ -40,24 +54,25 @@ if [ -d "rpi-rgb-led-matrix" ]; then
     sudo rm -rf rpi-rgb-led-matrix
 fi
 
+# Clone with regular user permissions
 git clone https://github.com/hzeller/rpi-rgb-led-matrix.git
 cd ~/rpi-rgb-led-matrix
 
 # Build with optimizations for Raspberry Pi
 echo "Building RGB Matrix C++ library..."
 cd ~/rpi-rgb-led-matrix/lib
-sudo make clean
+make clean
 export CFLAGS="-O3 -fomit-frame-pointer -funroll-loops"
 export CXXFLAGS="$CFLAGS"
-sudo make -j4 RGB_LIB_DISTRIBUTION=1 HARDWARE_DESC=2
+make -j4 RGB_LIB_DISTRIBUTION=1 HARDWARE_DESC=2
 
 # Build Python bindings
 echo "Building Python bindings..."
 cd ~/rpi-rgb-led-matrix/bindings/python
-sudo make clean
-sudo make build-python HARDWARE_DESC=2 PYTHON=$(which python3) CFLAGS="-O3 -fomit-frame-pointer -funroll-loops" RGB_LIB_DISTRIBUTION=1
+make clean
+make build-python HARDWARE_DESC=2 PYTHON=$(which python3) CFLAGS="-O3 -fomit-frame-pointer -funroll-loops" RGB_LIB_DISTRIBUTION=1
 
-if [ ! -f "build/lib.linux-aarch64-cpython-*/rgbmatrix/_core.*.so" ]; then
+if [ ! -f "build/lib."*"/rgbmatrix/_core."*".so" ]; then
     echo "Error: Failed to build RGB Matrix Python bindings"
     echo "Build directory contents:"
     ls -R build/
@@ -108,10 +123,10 @@ python3 -m pip install -r requirements.txt
 # Install RGB Matrix Python module into virtual environment
 echo "Installing RGB Matrix Python module into virtual environment..."
 cd ~/rpi-rgb-led-matrix/bindings/python
-sudo rm -rf build dist *.egg-info  # Clean any existing build artifacts
+rm -rf build dist *.egg-info  # Clean any existing build artifacts
 python3 setup.py clean --all
 CFLAGS="-O3 -fomit-frame-pointer -funroll-loops" python3 setup.py build
-python3 setup.py install
+python3 setup.py install --user
 
 # Return to project directory
 cd "$PROJECT_DIR"
