@@ -5,12 +5,12 @@ __pycache__/
 *.so
 .Python
 .env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
+#.venv
+#env/
+#venv/
+#ENV/
+#env.bak/
+#venv.bak/
 .python-version
 
 # IDE
@@ -26,4 +26,16 @@ venv.bak/
 .Spotlight-V100
 .Trashes
 ehthumbs.db
-Thumbs.db 
+Thumbs.db
+
+# Temporary or log files
+*.log
+*.tmp
+
+# Exclude Python compiled files (these need to be rebuilt)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+build/temp.*
+build/lib.* 
