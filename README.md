@@ -26,10 +26,10 @@ git clone https://github.com/dvd-rsnw/7th-ave-trains.git
 cd 7th-ave-trains
 ```
 
-2. Run the setup script:
+2. Run the setup script with sudo:
 ```bash
 chmod +x setup.sh
-./setup.sh
+sudo ./setup.sh
 ```
 
 ## Running the Display
@@ -40,6 +40,18 @@ sudo ./run.sh
 ```
 
 Stop the display with Ctrl+C.
+
+## Troubleshooting
+
+### Compilation Issues
+If you encounter "dangerous and unsupported relocations" errors during setup:
+- The script has been updated to use more conservative compilation flags (-O2 -fPIC)
+- For newer Raspberry Pi systems (especially 64-bit/aarch64), multiple installation methods are automatically attempted
+
+### Python Module Issues
+If the RGB Matrix module fails to install:
+- Try running the setup again with `sudo ./setup.sh`
+- The script includes several fallback methods for different architectures
 
 ## Development
 

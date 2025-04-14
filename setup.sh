@@ -118,16 +118,16 @@ check_venv
 
 # Ensure pip is available and upgrade it
 echo "Upgrading pip and installing basic tools..."
-sudo python3 -m pip install --upgrade pip wheel setuptools
+"$PROJECT_DIR/.venv/bin/pip" install --upgrade pip wheel setuptools
 
 echo "Installing project dependencies..."
-sudo python3 -m pip install -r requirements.txt
+"$PROJECT_DIR/.venv/bin/pip" install -r requirements.txt
 
 # Install RGB Matrix Python module into virtual environment
 echo "Installing RGB Matrix Python module into virtual environment..."
 cd ~/rpi-rgb-led-matrix/bindings/python
 sudo rm -rf build dist *.egg-info  # Clean any existing build artifacts
-sudo python3 setup.py clean --all
+"$PROJECT_DIR/.venv/bin/python" setup.py clean --all
 
 # Try manual build approach with specific compilation flags
 echo "Building RGB Matrix module with manual compilation..."
@@ -140,34 +140,48 @@ export LDFLAGS=""
 
 # Build the core components directly
 echo "Building core components directly..."
-sudo python3 -m pip install --upgrade numpy wheel   # Ensure numpy is up to date
+"$PROJECT_DIR/.venv/bin/pip" install --upgrade numpy wheel
 
 # Try specific build approach for aarch64
 if [[ $(uname -m) == "aarch64" ]]; then
   echo "Using aarch64-specific build options..."
-  sudo python3 setup.py build_ext --inplace
-  sudo python3 setup.py build --build-lib=build/lib
+  # Build directly using the virtual environment's Python
+  "$PROJECT_DIR/.venv/bin/python" setup.py build_ext --inplace
+  "$PROJECT_DIR/.venv/bin/python" setup.py build --build-lib=build/lib
   
   # Copy results to a specific directory where Python can find it
   sudo mkdir -p build/lib/rgbmatrix
   sudo cp -r rgbmatrix/*.so build/lib/rgbmatrix/ 2>/dev/null || true
   sudo cp -r build/lib*/rgbmatrix/*.so build/lib/rgbmatrix/ 2>/dev/null || true
   
-  # Try direct pip install from current directory
-  sudo python3 -m pip install -e .
+  # Install directly to the virtual environment
+  "$PROJECT_DIR/.venv/bin/pip" install -e .
 else
   # Regular build for non-aarch64
-  sudo python3 setup.py build
-  sudo python3 -m pip install -e .
+  "$PROJECT_DIR/.venv/bin/python" setup.py build
+  "$PROJECT_DIR/.venv/bin/pip" install -e .
 fi
 
 # Fallback method if the above doesn't work
 if [ $? -ne 0 ]; then
-    echo "Standard installation methods failed, trying simpler approach..."
-    cd ~/rpi-rgb-led-matrix
+    echo "Standard installation methods failed, trying direct copy approach..."
     
-    # Try simplest approach - install directly from the main directory
-    sudo CFLAGS="-O2 -fPIC" python3 -m pip install ./bindings/python/
+    # Try a very direct approach - build and copy
+    cd ~/rpi-rgb-led-matrix/bindings/python
+    sudo CFLAGS="-O2 -fPIC" python3 setup.py build
+    
+    # Find the built files
+    BUILT_FILES=$(find build -name "*.so" -type f)
+    
+    if [ -n "$BUILT_FILES" ]; then
+        echo "Found built files, copying directly to virtual environment site-packages..."
+        SITE_PACKAGES=$("$PROJECT_DIR/.venv/bin/python" -c "import site; print(site.getsitepackages()[0])")
+        sudo mkdir -p "$SITE_PACKAGES/rgbmatrix"
+        sudo cp $BUILT_FILES "$SITE_PACKAGES/rgbmatrix/"
+        echo "Copied files to $SITE_PACKAGES/rgbmatrix/"
+    else
+        echo "No built files found to copy"
+    fi
 fi
 
 # Return to project directory
@@ -195,7 +209,7 @@ source "\$PWD/.venv/bin/activate"
 
 # Start the API server in the background
 echo "Starting API server..."
-python3 main.py &
+"\$PWD/.venv/bin/python" main.py &
 API_PID=\$!
 
 # Wait a moment for the API to start
@@ -203,7 +217,7 @@ sleep 2
 
 # Start the LED controller
 echo "Starting LED display controller..."
-python3 led_matrix_controller.py
+"\$PWD/.venv/bin/python" led_matrix_controller.py
 
 # When LED controller exits, kill the API server
 kill \$API_PID
@@ -218,5 +232,6 @@ echo "  sudo ./run.sh"
 
 # Show virtual environment status
 echo -e "\nCurrent virtual environment status:"
-which python
-python -c "import sys; print(sys.prefix)" 
+"$PROJECT_DIR/.venv/bin/python" -c "import sys; print('Python path:', sys.executable)"
+"$PROJECT_DIR/.venv/bin/python" -c "import sys; print('Virtual env:', sys.prefix)"
+"$PROJECT_DIR/.venv/bin/pip" list 
