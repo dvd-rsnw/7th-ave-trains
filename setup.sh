@@ -129,18 +129,45 @@ cd ~/rpi-rgb-led-matrix/bindings/python
 rm -rf build dist *.egg-info  # Clean any existing build artifacts
 python3 setup.py clean --all
 
-# Try a more direct approach to building and installing
-echo "Building and installing RGB Matrix module directly..."
+# Try manual build approach with specific compilation flags
+echo "Building RGB Matrix module with manual compilation..."
 cd ~/rpi-rgb-led-matrix/bindings/python
-python3 -m pip install --upgrade numpy   # Ensure numpy is up to date
-CFLAGS="-O2 -fPIC" python3 setup.py build
-python3 -m pip install -e .
+
+# Set specific build flags for aarch64 architecture
+export CFLAGS="-O2 -fPIC"
+export CXXFLAGS="$CFLAGS"
+export LDFLAGS=""
+
+# Build the core components directly
+echo "Building core components directly..."
+python3 -m pip install --upgrade numpy wheel   # Ensure numpy is up to date
+
+# Try specific build approach for aarch64
+if [[ $(uname -m) == "aarch64" ]]; then
+  echo "Using aarch64-specific build options..."
+  python3 setup.py build_ext --inplace
+  python3 setup.py build --build-lib=build/lib
+  
+  # Copy results to a specific directory where Python can find it
+  mkdir -p build/lib/rgbmatrix
+  cp -r rgbmatrix/*.so build/lib/rgbmatrix/ 2>/dev/null || true
+  cp -r build/lib*/rgbmatrix/*.so build/lib/rgbmatrix/ 2>/dev/null || true
+  
+  # Try direct pip install from current directory
+  python3 -m pip install -e .
+else
+  # Regular build for non-aarch64
+  python3 setup.py build
+  python3 -m pip install -e .
+fi
 
 # Fallback method if the above doesn't work
 if [ $? -ne 0 ]; then
-    echo "First installation method failed, trying alternate method..."
-    cd ~/rpi-rgb-led-matrix/bindings/python
-    python3 -m pip install -e .
+    echo "Standard installation methods failed, trying simpler approach..."
+    cd ~/rpi-rgb-led-matrix
+    
+    # Try simplest approach - install directly from the main directory
+    CFLAGS="-O2 -fPIC" python3 -m pip install ./bindings/python/
 fi
 
 # Return to project directory
