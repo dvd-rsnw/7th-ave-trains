@@ -64,16 +64,16 @@ cd ~/rpi-rgb-led-matrix
 # Build with optimizations for Raspberry Pi
 echo "Building RGB Matrix C++ library..."
 cd ~/rpi-rgb-led-matrix/lib
-make clean
+sudo make clean
 export CFLAGS="-O2 -fPIC"
 export CXXFLAGS="$CFLAGS"
-make -j4 RGB_LIB_DISTRIBUTION=1 HARDWARE_DESC=2
+sudo make -j4 RGB_LIB_DISTRIBUTION=1 HARDWARE_DESC=2
 
 # Build Python bindings
 echo "Building Python bindings..."
 cd ~/rpi-rgb-led-matrix/bindings/python
-make clean
-make build-python HARDWARE_DESC=2 PYTHON=$(which python3) CFLAGS="-O2 -fPIC" RGB_LIB_DISTRIBUTION=1
+sudo make clean
+sudo make build-python HARDWARE_DESC=2 PYTHON=$(which python3) CFLAGS="-O2 -fPIC" RGB_LIB_DISTRIBUTION=1
 
 if [ ! -f "build/lib."*"/rgbmatrix/_core."*".so" ]; then
     echo "Error: Failed to build RGB Matrix Python bindings"
@@ -90,12 +90,12 @@ check_project_dir
 # Remove existing venv if it exists
 if [ -d ".venv" ]; then
     echo "Removing existing virtual environment..."
-    rm -rf .venv
+    sudo rm -rf .venv
 fi
 
 # Create new virtual environment
 echo "Creating new virtual environment..."
-python3 -m venv .venv
+sudo python3 -m venv .venv
 
 # Verify virtual environment was created
 if [ ! -d ".venv" ]; then
@@ -104,7 +104,7 @@ if [ ! -d ".venv" ]; then
 fi
 
 # Make sure the virtual environment is accessible
-chmod -R 755 .venv
+sudo chmod -R 755 .venv
 
 # Configure virtual environment to show prompt
 cat >> .venv/bin/activate << EOL
@@ -118,16 +118,16 @@ check_venv
 
 # Ensure pip is available and upgrade it
 echo "Upgrading pip and installing basic tools..."
-python3 -m pip install --upgrade pip wheel setuptools
+sudo python3 -m pip install --upgrade pip wheel setuptools
 
 echo "Installing project dependencies..."
-python3 -m pip install -r requirements.txt
+sudo python3 -m pip install -r requirements.txt
 
 # Install RGB Matrix Python module into virtual environment
 echo "Installing RGB Matrix Python module into virtual environment..."
 cd ~/rpi-rgb-led-matrix/bindings/python
-rm -rf build dist *.egg-info  # Clean any existing build artifacts
-python3 setup.py clean --all
+sudo rm -rf build dist *.egg-info  # Clean any existing build artifacts
+sudo python3 setup.py clean --all
 
 # Try manual build approach with specific compilation flags
 echo "Building RGB Matrix module with manual compilation..."
@@ -140,25 +140,25 @@ export LDFLAGS=""
 
 # Build the core components directly
 echo "Building core components directly..."
-python3 -m pip install --upgrade numpy wheel   # Ensure numpy is up to date
+sudo python3 -m pip install --upgrade numpy wheel   # Ensure numpy is up to date
 
 # Try specific build approach for aarch64
 if [[ $(uname -m) == "aarch64" ]]; then
   echo "Using aarch64-specific build options..."
-  python3 setup.py build_ext --inplace
-  python3 setup.py build --build-lib=build/lib
+  sudo python3 setup.py build_ext --inplace
+  sudo python3 setup.py build --build-lib=build/lib
   
   # Copy results to a specific directory where Python can find it
-  mkdir -p build/lib/rgbmatrix
-  cp -r rgbmatrix/*.so build/lib/rgbmatrix/ 2>/dev/null || true
-  cp -r build/lib*/rgbmatrix/*.so build/lib/rgbmatrix/ 2>/dev/null || true
+  sudo mkdir -p build/lib/rgbmatrix
+  sudo cp -r rgbmatrix/*.so build/lib/rgbmatrix/ 2>/dev/null || true
+  sudo cp -r build/lib*/rgbmatrix/*.so build/lib/rgbmatrix/ 2>/dev/null || true
   
   # Try direct pip install from current directory
-  python3 -m pip install -e .
+  sudo python3 -m pip install -e .
 else
   # Regular build for non-aarch64
-  python3 setup.py build
-  python3 -m pip install -e .
+  sudo python3 setup.py build
+  sudo python3 -m pip install -e .
 fi
 
 # Fallback method if the above doesn't work
@@ -167,7 +167,7 @@ if [ $? -ne 0 ]; then
     cd ~/rpi-rgb-led-matrix
     
     # Try simplest approach - install directly from the main directory
-    CFLAGS="-O2 -fPIC" python3 -m pip install ./bindings/python/
+    sudo CFLAGS="-O2 -fPIC" python3 -m pip install ./bindings/python/
 fi
 
 # Return to project directory
@@ -210,7 +210,7 @@ kill \$API_PID
 EOF
 
 # Make run script executable
-chmod +x run.sh
+sudo chmod +x run.sh
 
 echo "Setup complete! To run the display:"
 echo "  cd $PROJECT_DIR"
