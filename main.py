@@ -2,15 +2,22 @@
 import asyncio
 import sys
 import signal
+import os
 from typing import Dict, List, Any
+from pathlib import Path
+from dotenv import load_dotenv
 
 import httpx
 
 from rgb_matrix_controller import get_controller
 
-# URL to fetch train data from
-API_URL = "http://mother.local:4599/trains/fg-northbound-next"
-# Polling interval in seconds
+# Load environment variables from .env file
+env_path = Path('.') / '.env'
+load_dotenv(dotenv_path=env_path)
+
+# URL to fetch train data from - use environment variable with fallback
+API_URL = os.environ.get("TRAIN_API_URL", "http://mother.local:4599/trains/fg-northbound-next")
+# Polling interval in seconds (hardcoded)
 POLLING_INTERVAL = 15
 
 async def poll_and_display(controller: Any, url: str, interval: int) -> None:
@@ -21,6 +28,9 @@ async def poll_and_display(controller: Any, url: str, interval: int) -> None:
         url: The API URL to poll for train data
         interval: The polling interval in seconds
     """
+    print(f"Starting application with API URL: {url}")
+    print(f"Polling interval: {interval} seconds")
+    
     while True:
         try:
             async with httpx.AsyncClient() as client:

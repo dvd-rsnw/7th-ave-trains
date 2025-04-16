@@ -54,6 +54,10 @@ venv.bak/
 .installed.cfg
 *.egg
 
+# Keep .env.example but ignore .env
+.env
+!.env.example
+
 # Distribution / packaging
 .Python
 dist/

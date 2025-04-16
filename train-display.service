@@ -1,0 +1,16 @@
+[Unit]
+Description=LED Matrix Train Display
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/7th-ave-trains
+ExecStart=/usr/bin/python3 main.py
+Restart=on-failure
+# No need to set environment variables here as they are loaded from .env
+# If you need to override the .env file, uncomment and modify:
+#Environment="TRAIN_API_URL=http://custom-server.local:4599/trains/data"
+
+[Install]
+WantedBy=multi-user.target 
