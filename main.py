@@ -15,10 +15,8 @@ from rgb_matrix_controller import get_controller
 env_path = Path('.') / '.env'
 load_dotenv(dotenv_path=env_path)
 
-# URL to fetch train data from - use environment variable with fallback
-API_URL = os.environ.get("TRAIN_API_URL", "http://mother.local:4599/trains/fg-northbound-next")
-# Polling interval in seconds (hardcoded)
 POLLING_INTERVAL = 15
+API_URL = os.environ.get("TRAIN_API_URL")
 
 async def poll_and_display(controller: Any, url: str, interval: int) -> None:
     """Poll a URL for train data and display it on the matrix.
