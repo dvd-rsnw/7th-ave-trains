@@ -1,25 +1,66 @@
-from typing import List
-from fastapi import FastAPI
-from f_train.f_train import router as f_train_router, f_train_manhattan, f_train_manhattan_next
-from g_train.g_train import router as g_train_router, g_train_queens, g_train_next_queens
-from train_types import DirectionalTrainArrival
+#!/usr/bin/env python3
+import asyncio
+import sys
+import signal
+from typing import Dict, List, Any
 
-app = FastAPI()
+import httpx
 
-app.include_router(f_train_router)
-app.include_router(g_train_router)
+from rgb_matrix_controller import get_controller
 
-@app.get("/fg-trains-northbound-next", response_model=List[DirectionalTrainArrival])
-def fg_trains_northbound_next():
-    f_trains = f_train_manhattan_next()
-    g_trains = g_train_next_queens()
+# URL to fetch train data from
+API_URL = "http://mother.local:4599/trains/fg-northbound-next"
+# Polling interval in seconds
+POLLING_INTERVAL = 15
+
+async def poll_and_display(controller: Any, url: str, interval: int) -> None:
+    """Poll a URL for train data and display it on the matrix.
     
-    # Combine all trains
-    all_trains = f_trains + g_trains
+    Args:
+        controller: The matrix controller object
+        url: The API URL to poll for train data
+        interval: The polling interval in seconds
+    """
+    while True:
+        try:
+            async with httpx.AsyncClient() as client:
+                resp = await client.get(url, timeout=5.0)
+                if resp.status_code == 200:
+                    trains = resp.json()
+                    controller.display_trains(trains[:2])  # Display first two trains
+                else:
+                    print(f"Bad response: {resp}")
+                    controller.display_trains([
+                        {"line": "?", "status": "Bad response", "express": False},
+                        {"line": "?", "status": "Bad response", "express": False}
+                    ])
+        except Exception as e:
+            print(f"Error: {e}")
+            controller.display_trains([
+                {"line": "?", "status": str(e)[:20], "express": False}
+            ])
+        await asyncio.sleep(interval)
+
+async def main() -> None:
+    """Main function to set up and run the train display."""
+    # Get the controller instance
+    controller = get_controller()
     
-    # Sort by arrival time (using status string which is in format "X mins")
-    # We'll extract the number from the status for proper numeric sorting
-    sorted_trains = sorted(all_trains, key=lambda x: int(x.status.split()[0]))
+    # Register signal handlers for graceful shutdown
+    for sig in (signal.SIGINT, signal.SIGTERM):
+        signal.signal(sig, lambda s, f: sys.exit(0))
     
-    # Return the next 2 trains
-    return sorted_trains[:2]
+    # Start polling and displaying trains
+    try:
+        await poll_and_display(controller, API_URL, POLLING_INTERVAL)
+    except KeyboardInterrupt:
+        print("Shutting down...")
+    finally:
+        controller.shutdown()
+
+if __name__ == "__main__":
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print("Exiting...")
+        sys.exit(0)

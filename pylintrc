@@ -1,0 +1,197 @@
+[MASTER]
+# Specify a configuration file
+rcfile=pylintrc
+
+# Add files or directories to the blacklist. They should be base names, not paths.
+ignore=__pycache__,venv,.venv,CVS,.git,.pytest_cache
+
+# Add files or directories matching the regex patterns to the blacklist
+ignore-patterns=.*\.pyi$
+
+# Python code to execute
+init-hook='import sys; sys.path.append(".")'
+
+# Use multiple processes to speed up Pylint
+jobs=4
+
+# Pickle collected data for later comparisons
+persistent=yes
+
+# Load plugins
+load-plugins=
+
+# Use multiple processes to speed up Pylint
+jobs=4
+
+# Tells whether to display a full report or only the messages
+reports=no
+
+# Activate the evaluation score.
+score=yes
+
+[MESSAGES CONTROL]
+# Only show warnings with the categories listed below
+disable=
+    attribute-defined-outside-init,
+    duplicate-code,
+    fixme,
+    invalid-name,
+    missing-function-docstring,
+    missing-module-docstring,
+    no-member,
+    protected-access,
+    too-few-public-methods,
+    too-many-arguments,
+    too-many-instance-attributes,
+    unnecessary-pass
+
+[REPORTS]
+# Set the output format
+output-format=text
+
+# Tells whether to display a full report or only the messages
+reports=no
+
+# Activate the evaluation score.
+score=yes
+
+[BASIC]
+# Good variable names which should always be accepted, separated by a comma
+good-names=i,j,k,ex,Run,_,id,e,f,x,y
+
+# Bad variable names which should always be refused, separated by a comma
+bad-names=foo,bar,baz,toto,tutu,tata
+
+# Include a hint for the correct naming format with invalid-name
+include-naming-hint=yes
+
+# Regular expression matching correct module names
+module-rgx=(([a-z_][a-z0-9_]*)|([A-Z][a-zA-Z0-9]+))$
+
+# Regular expression matching correct constant names
+const-rgx=(([A-Z_][A-Z0-9_]*)|(__.*__))$
+
+# Regular expression matching correct class names
+class-rgx=[A-Z_][a-zA-Z0-9]+$
+
+# Regular expression matching correct function names
+function-rgx=[a-z_][a-z0-9_]{2,}$
+
+# Regular expression matching correct method names
+method-rgx=[a-z_][a-z0-9_]{2,}$
+
+# Regular expression matching correct argument names
+argument-rgx=[a-z_][a-z0-9_]{2,}$
+
+# Regular expression matching correct variable names
+variable-rgx=[a-z_][a-z0-9_]{2,}$
+
+# Regular expression matching correct attribute names
+attr-rgx=[a-z_][a-z0-9_]{2,}$
+
+# Regular expression matching correct inline var names
+inlinevar-rgx=[A-Za-z_][A-Za-z0-9_]*$
+
+# Regular expression which should match only function or class names
+# that do not require a docstring
+no-docstring-rgx=__.*__
+
+# Minimum line length for functions/classes that require docstrings
+docstring-min-length=10
+
+[FORMAT]
+# Maximum number of characters on a single line.
+max-line-length=88
+
+# Maximum number of lines in a module
+max-module-lines=1000
+
+# String used as indentation unit
+indent-string='    '
+
+# Number of spaces of indent required inside a hanging or continued line.
+indent-after-paren=4
+
+# Expected format of line ending
+expected-line-ending-format=LF
+
+[SIMILARITIES]
+# Minimum lines number of a similarity.
+min-similarity-lines=4
+
+# Ignore comments when computing similarities.
+ignore-comments=yes
+
+# Ignore docstrings when computing similarities.
+ignore-docstrings=yes
+
+# Ignore imports when computing similarities.
+ignore-imports=yes
+
+[TYPECHECK]
+# Tells whether missing members accessed in mixin class should be ignored
+ignore-mixin-members=yes
+
+# List of module names for which member attributes should not be checked
+ignored-modules=
+
+# List of class names for which member attributes should not be checked
+ignored-classes=
+
+# List of members which are set dynamically and missed by pylint inference system
+generated-members=
+
+[VARIABLES]
+# Tells whether we should check for unused import in __init__ files.
+init-import=no
+
+# A regular expression matching the name of dummy variables
+dummy-variables-rgx=_$|dummy
+
+# List of additional names supposed to be defined in builtins
+additional-builtins=
+
+[DESIGN]
+# Maximum number of arguments for function / method
+max-args=6
+
+# Maximum number of locals for function / method body
+max-locals=15
+
+# Maximum number of return / yield for function / method body
+max-returns=6
+
+# Maximum number of branch for function / method body
+max-branches=12
+
+# Maximum number of statements in function / method body
+max-statements=50
+
+# Maximum number of parents for a class
+max-parents=7
+
+# Maximum number of attributes for a class
+max-attributes=11
+
+# Maximum number of public methods for a class
+max-public-methods=20
+
+# Maximum number of boolean expressions in a if statement
+max-bool-expr=5
+
+[CLASSES]
+# List of method names used to declare (i.e. assign) instance attributes.
+defining-attr-methods=__init__,__new__,setUp
+
+# List of valid names for the first argument in a class method.
+valid-classmethod-first-arg=cls
+
+# List of valid names for the first argument in a metaclass class method.
+valid-metaclass-classmethod-first-arg=mcs
+
+# List of member names, which should be excluded from the protected access warning.
+exclude-protected=_asdict,_fields,_replace,_source,_make
+
+[EXCEPTIONS]
+# Exceptions that will emit a warning when caught
+overgeneral-exceptions=Exception 

@@ -19,6 +19,8 @@ obj/
 # Dependency directories
 lib/
 libs/
+# But allow our assets directory
+!assets/
 
 # Debug files
 *.dSYM/
@@ -30,6 +32,45 @@ libs/
 .vscode/
 *~
 .DS_Store
+.idea/
+*.swp
+*.swo
+
+# Python specific
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+.env
+.venv/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.python-version
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Distribution / packaging
+.Python
+dist/
+downloads/
+eggs/
+.eggs/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Logs
+*.log
+logs/
 
 # Raspberry Pi specific
 __pycache__/
