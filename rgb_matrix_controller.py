@@ -1,12 +1,14 @@
-import platform
-import time
-import sys
 import asyncio
+import sys
 from typing import List, Dict, Any, Optional
 
-from matrix_setup import initialize_matrix
-from text_renderer import TextRenderer
+from matrix_setup import (
+    initialize_matrix,
+    MATRIX_WIDTH, MATRIX_HEIGHT, PANEL_WIDTH,
+    PADDING_X, PADDING_Y, CENTER_GAP, ROW_HEIGHT
+)
 from shape_renderer import ShapeRenderer
+from text_renderer import TextRenderer
 from train_renderer import TrainRenderer
 
 class RGBMatrixController:
@@ -27,7 +29,9 @@ class RGBMatrixController:
             self.text_renderer = TextRenderer(
                 self.matrix, self.font, self.graphics, is_mock=False
             )
-            self.shape_renderer = ShapeRenderer(self.matrix, is_mock=False)
+            self.shape_renderer = ShapeRenderer(
+                self.matrix, self.graphics, is_mock=False
+            )
             self.train_renderer = TrainRenderer(
                 self.matrix, self.graphics, self.text_renderer, 
                 self.shape_renderer, is_mock=False
@@ -35,7 +39,7 @@ class RGBMatrixController:
         else:
             # Mock versions of renderers
             self.text_renderer = TextRenderer(None, None, None, is_mock=True)
-            self.shape_renderer = ShapeRenderer(None, is_mock=True)
+            self.shape_renderer = ShapeRenderer(None, None, is_mock=True)
             self.train_renderer = TrainRenderer(
                 None, None, self.text_renderer, self.shape_renderer, is_mock=True
             )
@@ -79,4 +83,4 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("Exiting...")
         controller.shutdown()
-        sys.exit(0) 
+        sys.exit(0)

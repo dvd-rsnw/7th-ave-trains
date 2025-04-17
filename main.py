@@ -34,6 +34,7 @@ async def poll_and_display(controller: Any, url: str, interval: int) -> None:
             async with httpx.AsyncClient() as client:
                 resp = await client.get(url, timeout=5.0)
                 if resp.status_code == 200:
+                    print('response', resp.json())
                     trains = resp.json()
                     controller.display_trains(trains[:2])  # Display first two trains
                 else:
