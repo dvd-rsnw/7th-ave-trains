@@ -48,3 +48,34 @@ class TextRenderer:
             self.matrix, self.font, x, y,
             self.text_color, text
         )
+        
+    def draw_text_with_fixed_suffix(self, variable_text: str, fixed_text: str, end_x: int, y: int) -> None:
+        """Draw text where the fixed suffix stays at a fixed position and variable text aligns to the left of it.
+        
+        Args:
+            variable_text: Variable part of the text (e.g., the number)
+            fixed_text: Fixed part of the text (e.g., "mins")
+            end_x: The x-coordinate where the fixed_text should end
+            y: Y-coordinate (text baseline)
+        """
+        if self.is_mock:
+            return
+            
+        # Calculate the width of the fixed text
+        fixed_width = self.get_text_width(fixed_text)
+        
+        # Position the fixed text so its end aligns with end_x
+        fixed_x = end_x - fixed_width
+        
+        # Draw the fixed text at the calculated position
+        self.graphics.DrawText(
+            self.matrix, self.font, fixed_x, y,
+            self.text_color, fixed_text
+        )
+        
+        # Calculate and draw the variable text to the left of the fixed text
+        variable_x = fixed_x - self.get_text_width(variable_text)
+        self.graphics.DrawText(
+            self.matrix, self.font, variable_x, y,
+            self.text_color, variable_text
+        )

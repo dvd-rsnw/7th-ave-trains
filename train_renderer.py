@@ -69,8 +69,9 @@ class TrainRenderer:
         # Calculate component positions based on exact measurements
         circle_x = x + CIRCLE_WIDTH // 2
         circle_y = y + (height // 2)
-        line_name_x = x + CIRCLE_WIDTH + FIRST_GAP
-        minutes_x = line_name_x + LINE_NAME_WIDTH + SECOND_GAP - 4  # Move the minutes (x mins) text 2 columns to the right from the original position
+        line_name_x = x + CIRCLE_WIDTH + FIRST_GAP - 1  # Moved one column to the left
+        minutes_x = line_name_x + LINE_NAME_WIDTH + SECOND_GAP - 4 + 3  # Now moved three columns to the right in total
+        minutes_end_x = minutes_x + MINUTES_WIDTH  # This is where we want the text to end
         
         # Get train information
         line = train_data['line']
@@ -102,18 +103,34 @@ class TrainRenderer:
         else:  # G train
             self.shape_renderer.draw_thick_G(letter_x, letter_y, text_color_tuple)
         
-        # Draw line name and status
+        # Draw line name
         self.text_renderer.draw_text(
             line_name[:14],  # Truncate long text
             line_name_x,
             y + 9  # Move down 1 row (was y + 7)
         )
         
-        self.text_renderer.draw_text(
-            status[:7],  # Truncate long text
-            minutes_x,
-            y + 9  # Move down 1 row (was y + 7)
-        )
+        # Parse and draw status with fixed "mins" position
+        if status and " mins" in status:
+            # Split "5 mins" into "5" and " mins"
+            parts = status.split(" mins", 1)
+            variable_part = parts[0]
+            fixed_part = " mins"
+            
+            # Draw with fixed suffix
+            self.text_renderer.draw_text_with_fixed_suffix(
+                variable_part,
+                fixed_part,
+                minutes_end_x,
+                y + 9
+            )
+        else:
+            # Fallback to regular drawing if we don't have the expected format
+            self.text_renderer.draw_text(
+                status[:7],  # Truncate long text
+                minutes_x,
+                y + 9
+            )
 
     def render_trains(self, trains: List[Dict[str, Any]]) -> None:
         """Render a list of trains (up to 2).

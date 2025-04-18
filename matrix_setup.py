@@ -24,7 +24,7 @@ MINUTES_WIDTH = 34  # Previously updated
 # Get the base directory of the project
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 # Font path relative to project root - using 5x8 font for narrower spacing
-FONT_PATH = os.path.join(PROJECT_ROOT, "assets", "fonts", "5x8.bdf")
+FONT_PATH = os.path.join(PROJECT_ROOT, "assets", "fonts", "6x10.bdf")
 
 def initialize_matrix() -> Dict[str, Any]:
     """Initialize and return the matrix and related objects based on platform.
