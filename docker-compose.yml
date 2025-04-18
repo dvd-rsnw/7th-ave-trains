@@ -11,8 +11,12 @@ services:
     volumes:
       - ./:/app
     extra_hosts:
-      - "mother.local:192.168.68.63"
+      - "mother.local:192.168.68.68"
     # Uncomment and set if you need to expose ports
     # ports:
     #   - "8000:8000"
     # Add more environment variables as needed
+
+    # This restart policy ensures the container starts automatically
+    # when Docker starts, providing additional reliability
+    restart: unless-stopped

@@ -12,10 +12,11 @@ import httpx
 from rgb_matrix_controller import get_controller
 
 # Load environment variables from .env file
-env_path = Path('.') / '.env'
+script_dir = Path(__file__).parent.absolute()
+env_path = script_dir / '.env'
 load_dotenv(dotenv_path=env_path)
 
-POLLING_INTERVAL = 15
+POLLING_INTERVAL = 30
 API_URL = os.environ.get("TRAIN_API_URL")
 
 async def poll_and_display(controller: Any, url: str, interval: int) -> None:
