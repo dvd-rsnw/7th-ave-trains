@@ -1,0 +1,10 @@
+# Ignore Python cache and other unnecessary files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+*.db
+*.sqlite3
+*.log
+assets/fonts/*.md

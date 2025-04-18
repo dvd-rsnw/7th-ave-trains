@@ -59,54 +59,58 @@ class ShapeRenderer:
                     self.matrix.SetPixel(x + i, y + j, r, g, b)
 
     def draw_thick_F(self, x: int, y: int, color: Any) -> None:
-        """Draw a 2px thick F letter."""
+        """Draw a 2px thick F letter (now 9px tall, top line 5px wide, raised 1 row)."""
         if self.is_mock:
             return
-            
+        
         r, g, b = self._get_rgb_values(color)
-            
-        # Vertical line (shifted right by 1, down by 1)
-        for i in range(8):  # Height of 8px
-            self.matrix.SetPixel(x + 1, y + 1 + i, r, g, b)
-            self.matrix.SetPixel(x + 2, y + 1 + i, r, g, b)
         
-        # Top horizontal line (shifted right by 1, down by 1)
-        for i in range(6):  # Width of 6px
+        # Vertical line (shifted right by 1, down by 0)
+        for i in range(9):  # Height of 9px
+            self.matrix.SetPixel(x + 1, y + i, r, g, b)
+            self.matrix.SetPixel(x + 2, y + i, r, g, b)
+        
+        # Top horizontal line (shifted right by 1, down by 0)
+        for i in range(5):  # Width of 5px
+            self.matrix.SetPixel(x + 1 + i, y, r, g, b)
             self.matrix.SetPixel(x + 1 + i, y + 1, r, g, b)
-            self.matrix.SetPixel(x + 1 + i, y + 2, r, g, b)
         
-        # Middle horizontal line (shifted right by 1, down by 1)
+        # Middle horizontal line (move down 1 row)
         for i in range(4):  # Width of 4px
             self.matrix.SetPixel(x + 1 + i, y + 4, r, g, b)
             self.matrix.SetPixel(x + 1 + i, y + 5, r, g, b)
 
     def draw_thick_G(self, x: int, y: int, color: Any) -> None:
-        """Draw a 2px thick G letter."""
+        """Draw a 2px thick G letter (9px tall, with curved bottom left corner, bottom row omits leftmost pixel, and one more row at the top of the inner part)."""
         if self.is_mock:
             return
-            
+        
         r, g, b = self._get_rgb_values(color)
-            
-        # Top curve
-        for i in range(6):  # Width of 6px
+        
+        # Top row (xooooo)
+        for i in range(1, 6):
             self.matrix.SetPixel(x + i, y, r, g, b)
+        # Second row (oooooo)
+        for i in range(0, 6):
             self.matrix.SetPixel(x + i, y + 1, r, g, b)
-        
-        # Left vertical line
-        for i in range(8):  # Height of 8px
-            self.matrix.SetPixel(x, y + i, r, g, b)
-            self.matrix.SetPixel(x + 1, y + i, r, g, b)
-        
-        # Bottom curve
-        for i in range(6):  # Width of 6px
+        # Third and fourth rows (ooxxxx)
+        for j in range(2, 4):
+            for i in range(0, 2):
+                self.matrix.SetPixel(x + i, y + j, r, g, b)
+        # Fifth and sixth rows (ooxooo)
+        for j in range(4, 6):
+            for i in range(0, 2):
+                self.matrix.SetPixel(x + i, y + j, r, g, b)
+            for i in range(3, 6):
+                self.matrix.SetPixel(x + i, y + j, r, g, b)
+        # Seventh row (ooxxoo)
+        for i in range(0, 2):
             self.matrix.SetPixel(x + i, y + 6, r, g, b)
+        for i in range(4, 6):
+            self.matrix.SetPixel(x + i, y + 6, r, g, b)
+        # Eighth row (oooooo)
+        for i in range(0, 6):
             self.matrix.SetPixel(x + i, y + 7, r, g, b)
-        
-        # Right vertical stub
-        for i in range(4):  # Height of 4px
-            self.matrix.SetPixel(x + 4, y + 4 + i, r, g, b)
-            self.matrix.SetPixel(x + 5, y + 4 + i, r, g, b)
-        
-        # Middle horizontal line
-        self.matrix.SetPixel(x + 3, y + 4, r, g, b)
-        self.matrix.SetPixel(x + 3, y + 5, r, g, b)
+        # Ninth row (xooooo)
+        for i in range(1, 6):
+            self.matrix.SetPixel(x + i, y + 8, r, g, b)

@@ -1,0 +1,18 @@
+version: '3.8'
+services:
+  matrix-app:
+    build: .
+    container_name: matrix-app
+    privileged: true
+    env_file:
+      - .env
+    environment:
+      - POLLING_INTERVAL=15
+    volumes:
+      - ./:/app
+    extra_hosts:
+      - "mother.local:192.168.68.63"
+    # Uncomment and set if you need to expose ports
+    # ports:
+    #   - "8000:8000"
+    # Add more environment variables as needed

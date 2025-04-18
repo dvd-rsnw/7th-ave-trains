@@ -70,7 +70,7 @@ class TrainRenderer:
         circle_x = x + CIRCLE_WIDTH // 2
         circle_y = y + (height // 2)
         line_name_x = x + CIRCLE_WIDTH + FIRST_GAP
-        minutes_x = line_name_x + LINE_NAME_WIDTH + SECOND_GAP
+        minutes_x = line_name_x + LINE_NAME_WIDTH + SECOND_GAP - 4  # Move the minutes (x mins) text 2 columns to the right from the original position
         
         # Get train information
         line = train_data['line']
@@ -106,13 +106,13 @@ class TrainRenderer:
         self.text_renderer.draw_text(
             line_name[:14],  # Truncate long text
             line_name_x,
-            y + 7  # Vertically centered in row
+            y + 9  # Move down 1 row (was y + 7)
         )
         
         self.text_renderer.draw_text(
             status[:7],  # Truncate long text
             minutes_x,
-            y + 7  # Vertically centered in row
+            y + 9  # Move down 1 row (was y + 7)
         )
 
     def render_trains(self, trains: List[Dict[str, Any]]) -> None:
