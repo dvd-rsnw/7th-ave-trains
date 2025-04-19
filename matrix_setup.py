@@ -42,11 +42,11 @@ def initialize_matrix() -> Dict[str, Any]:
         options.hardware_mapping = 'adafruit-hat'
         
         # Additional recommended options for better performance
-        options.gpio_slowdown = 2  # Slow down GPIO for stability
-        options.brightness = 30    # Mid brightness to prevent overheating
-        options.pwm_bits = 5      # Lower PWM bits for better refresh
-        options.pwm_lsb_nanoseconds = 180  # Tune PWM timing
-        options.limit_refresh_rate_hz = 60  # Cap refresh for stability
+        options.gpio_slowdown = 4  # Slow down GPIO for stability
+        options.brightness = 50    # Mid brightness to prevent overheating
+        options.pwm_bits = 7      # Lower PWM bits for better refresh
+        options.pwm_lsb_nanoseconds = 130  # Tune PWM timing
+        options.limit_refresh_rate_hz = 100  # Cap refresh for stability
 
 
         matrix = RGBMatrix(options=options)
