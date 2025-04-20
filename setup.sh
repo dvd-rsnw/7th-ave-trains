@@ -82,39 +82,39 @@ echo ""
 echo "Step 3/5: Creating configuration files..."
 echo "--------------------------------------------------------------------"
 echo "Creating .env file with API settings..."
-echo "TRAIN_API_URL=http://mother.local:4599/trains/fg-northbound-next" > .env
+echo "TRAIN_API_URL=http://server.local:4599/trains/fg-northbound-next" > .env
 check_status ".env file creation"
 
 # Step 4: Configure network connectivity
 echo ""
 echo "Step 4/5: Setting up network connectivity..."
 echo "--------------------------------------------------------------------"
-echo "Testing connection to API server (mother.local)..."
+echo "Testing connection to API server (server.local)..."
 
 # Try to ping the host first
-if ping -c 1 mother.local &> /dev/null; then
-    echo "✅ Successfully pinged mother.local"
+if ping -c 1 server.local &> /dev/null; then
+    echo "✅ Successfully pinged server.local"
     
     # Get the IP address
-    IP_ADDRESS=$(ping -c 1 mother.local | grep -oP '(\d+\.\d+\.\d+\.\d+)' | head -1)
+    IP_ADDRESS=$(ping -c 1 server.local | grep -oP '(\d+\.\d+\.\d+\.\d+)' | head -1)
     echo "   Resolved to IP address: $IP_ADDRESS"
     
     # Test the API endpoint
-    if curl --connect-timeout 5 -s -o /dev/null -w "%{http_code}" "http://mother.local:4599/trains/fg-northbound-next" | grep -q "200"; then
+    if curl --connect-timeout 5 -s -o /dev/null -w "%{http_code}" "http://server.local:4599/trains/fg-northbound-next" | grep -q "200"; then
         echo "✅ Successfully connected to API endpoint"
     else
-        echo "⚠️  Warning: Could not connect to API endpoint at http://mother.local:4599/trains/fg-northbound-next"
+        echo "⚠️  Warning: Could not connect to API endpoint at http://server.local:4599/trains/fg-northbound-next"
         echo "   The application may not function correctly. Please check if:"
         echo "   - The API server is running"
         echo "   - Port 4599 is open"
         echo "   - The endpoint path is correct"
     fi
 else
-    echo "⚠️  Warning: Could not ping mother.local"
+    echo "⚠️  Warning: Could not ping server.local"
     IP_ADDRESS=""
     
     # Try to resolve using getent
-    GETENT_RESULT=$(getent hosts mother.local 2>/dev/null)
+    GETENT_RESULT=$(getent hosts server.local 2>/dev/null)
     if [ -n "$GETENT_RESULT" ]; then
         IP_ADDRESS=$(echo "$GETENT_RESULT" | awk '{ print $1 }')
         echo "   Resolved using getent to IP: $IP_ADDRESS"
@@ -122,7 +122,7 @@ else
     
     # Ask user for the IP if we couldn't resolve it
     if [ -z "$IP_ADDRESS" ]; then
-        echo "   Could not automatically resolve mother.local to an IP address."
+        echo "   Could not automatically resolve server.local to an IP address."
         echo "   Please enter the IP address of the API server (default: 192.168.68.68):"
         read -r USER_IP
         
@@ -135,12 +135,12 @@ else
         echo "   Using IP address: $IP_ADDRESS"
         
         # Ask if the user wants to add an entry to /etc/hosts
-        echo "   Would you like to add mother.local to your /etc/hosts file? (y/n, default: y)"
+        echo "   Would you like to add server.local to your /etc/hosts file? (y/n, default: y)"
         read -r ADD_HOST
         
         if [[ -z "$ADD_HOST" || "$ADD_HOST" =~ ^[Yy]$ ]]; then
-            echo "$IP_ADDRESS mother.local" | sudo tee -a /etc/hosts > /dev/null
-            check_status "Added mother.local to /etc/hosts"
+            echo "$IP_ADDRESS server.local" | sudo tee -a /etc/hosts > /dev/null
+            check_status "Added server.local to /etc/hosts"
         fi
     fi
 fi
@@ -148,7 +148,7 @@ fi
 # Update docker-compose.yml with the correct IP
 if [ -n "$IP_ADDRESS" ]; then
     echo "Updating docker-compose.yml with IP: $IP_ADDRESS"
-    sed -i "s/mother.local:[0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+/mother.local:$IP_ADDRESS/g" docker-compose.yml
+    sed -i "s/server.local:[0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+/server.local:$IP_ADDRESS/g" docker-compose.yml
     check_status "docker-compose.yml update"
 else
     echo "⚠️  Warning: Could not update docker-compose.yml with IP address"
