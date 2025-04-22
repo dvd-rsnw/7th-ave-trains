@@ -22,9 +22,10 @@ SECOND_GAP = 5  # Previously updated
 MINUTES_WIDTH = 34  # Previously updated
 
 # Get the base directory of the project
-PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 # Font path relative to project root - using 5x8 font for narrower spacing
-FONT_PATH = os.path.join(PROJECT_ROOT, "assets", "fonts", "6x10.bdf")
+script_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(script_dir)
+font_path = "/home/matrix/matrix-controller/assets/fonts/6x10.bdf"
 
 def initialize_matrix() -> Dict[str, Any]:
     """Initialize and return the matrix and related objects based on platform.
@@ -40,20 +41,21 @@ def initialize_matrix() -> Dict[str, Any]:
         options.chain_length = 2  # Two panels chained horizontally
         options.parallel = 1
         options.hardware_mapping = 'adafruit-hat'
-        
+        options.disable_hardware_pulsing = True
+
         # Additional recommended options for better performance
-        options.gpio_slowdown = 4  # Slow down GPIO for stability
-        options.brightness = 50    # Mid brightness to prevent overheating
-        options.pwm_bits = 7      # Lower PWM bits for better refresh
+        options.gpio_slowdown = 3  # Slow down GPIO for stability
+        options.brightness = 40    # Mid brightness to prevent overheating
+        options.pwm_bits = 8      # Lower PWM bits for better refresh
         options.pwm_lsb_nanoseconds = 130  # Tune PWM timing
-        options.limit_refresh_rate_hz = 100  # Cap refresh for stability
+        options.limit_refresh_rate_hz = 120  # Cap refresh for stability
 
 
         matrix = RGBMatrix(options=options)
         font = graphics.Font()
         
         # Load the font from our assets directory
-        font.LoadFont(FONT_PATH)
+        font.LoadFont(font_path)
         
         return {
             "matrix": matrix,

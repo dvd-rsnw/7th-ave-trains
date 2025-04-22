@@ -1,0 +1,6 @@
+httpx==0.26.0
+pydantic==2.6.0
+pillow==10.2.0  # Required for LED matrix image handling
+rpi-gpio==0.7.1  # Required for LED matrix GPIO access
+pylint==3.0.3    # Required for code linting
+python-dotenv==1.0.0  # Required for loading environment variables

@@ -16,8 +16,22 @@ script_dir = Path(__file__).parent.absolute()
 env_path = script_dir / '.env'
 load_dotenv(dotenv_path=env_path)
 
-POLLING_INTERVAL = 30
+POLLING_INTERVAL = 15
 API_URL = os.environ.get("TRAIN_API_URL")
+
+try:
+    # Set affinity to CPUs 0, 1, 2 (leaving 3 isolated)
+    os.sched_setaffinity(0, {0, 1, 2})
+    print("Set CPU affinity to cores 0-2")
+except Exception as e:
+    print(f"Could not set CPU affinity: {e}")
+
+# For non-root users, use a lower priority
+try:
+    os.nice(-10)  # Use nice instead of real-time priority
+    print("Set process priority")
+except Exception as e:
+    print(f"Could not set process priority: {e}")
 
 async def poll_and_display(controller: Any, url: str, interval: int) -> None:
     """Poll a URL for train data and display it on the matrix.
