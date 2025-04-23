@@ -6,6 +6,7 @@ import os
 from typing import Dict, List, Any
 from pathlib import Path
 from dotenv import load_dotenv
+import logging
 
 import httpx
 
@@ -49,18 +50,23 @@ async def poll_and_display(controller: Any, url: str, interval: int) -> None:
             async with httpx.AsyncClient() as client:
                 resp = await client.get(url, timeout=5.0)
                 if resp.status_code == 200:
-                    print('response', resp.json())
                     trains = resp.json()
-                    controller.display_trains(trains[:2])  # Display first two trains
+                    logging.debug(f"Response: {trains}")
+                    await controller.display_trains(trains[:2])  # Display first two trains
                 else:
-                    print(f"Bad response: {resp}")
-                    controller.display_trains([
-                        {"line": "?", "status": "Bad response", "express": False},
+                    logging.error(f"Bad response: {resp.status_code} - {resp.text[:100]}")
+                    await controller.display_trains([
+                        {"line": "?", "status": f"Error {resp.status_code}", "express": False},
                         {"line": "?", "status": "Bad response", "express": False}
                     ])
+        except httpx.RequestError as e:
+            logging.error(f"Request error: {e}")
+            await controller.display_trains([
+                {"line": "?", "status": "Network error", "express": False}
+            ])
         except Exception as e:
-            print(f"Error: {e}")
-            controller.display_trains([
+            logging.error(f"Unexpected error: {e}", exc_info=True)
+            await controller.display_trains([
                 {"line": "?", "status": str(e)[:20], "express": False}
             ])
         await asyncio.sleep(interval)

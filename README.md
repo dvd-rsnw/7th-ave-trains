@@ -1,6 +1,6 @@
 # 7th Avenue Trains LED Matrix Display
 
-An application for Raspberry Pi to display NYC subway train information on an RGB LED matrix using Docker.
+An application for Raspberry Pi to display NYC subway train information on an RGB LED matrix using Python virtual environment.
 
 ## Features
 
@@ -8,13 +8,13 @@ An application for Raspberry Pi to display NYC subway train information on an RG
 - Shows train lines in their proper MTA colors
 - Supports both local and express trains
 - Uses environment variables for configuration
-- Runs in a Docker container for easy setup and maintenance
+- Runs in a Python virtual environment for optimal performance
 
 ## Setup Instructions
 
 ### Hardware Requirements
 
-- Raspberry Pi (3B+ or newer recommended)
+- Raspberry Pi Zero 2 W (recommended)
 - RGB LED Matrix with HUB75 interface
 - Adafruit RGB Matrix Bonnet or compatible hardware
 - Power supply for both Raspberry Pi and LED Matrix
@@ -43,53 +43,47 @@ git clone https://github.com/yourusername/7th-ave-trains.git ~/matrix
 cd ~/matrix
 ```
 
-#### 3. Make the Setup Script Executable
+#### 3. Run the Installation Script
+
+The installation script will handle everything automatically:
 
 ```bash
-# This step is REQUIRED - make the setup script executable
-chmod +x setup.sh
-```
+# Make the install script executable
+chmod +x install.sh
 
-#### 4. Run the Setup Script
-
-The setup script will handle everything else automatically:
-
-```bash
-# Run the setup script
-./setup.sh
+# Run the installation script
+./install.sh
 ```
 
 This script will:
-- Make both scripts executable
-- Install Docker and Docker Compose if not already installed
+- Create a Python virtual environment
+- Install system dependencies
+- Install the RGB Matrix library and Python bindings
 - Create and configure the `.env` file with the API URL
-- Automatically detect the IP address for "mother.local" (the API server)
-- Update the Docker configuration with the correct IP address
-- Build and start the Docker container
-- Create a systemd service file for auto-starting on boot
-- Ask if you want to enable the service to start automatically on boot
+- Set up a systemd service for auto-starting on boot
+- Install all Python dependencies in the virtual environment
 
-#### 5. Verify the Installation
+#### 4. Verify the Installation
 
-After the setup completes, check that the application is running:
+After the installation completes, check that the application is running:
 
 ```bash
 # Check the status of the application
-./run.sh status
+sudo systemctl status matrix-display
 
-# View the application logs to verify it's receiving data
-./run.sh logs
+# View the application logs
+sudo journalctl -u matrix-display -f
 ```
 
 You should see output showing train data being received from the API.
 
 ### Accessing the Train API
 
-The application connects to an API endpoint at `mother.local:4599/trains/fg-northbound-next`. Make sure:
+The application connects to an API endpoint at `server.local:4599/trains/fg-northbound-next`. Make sure:
 
-1. The device hosting the API ("mother.local") is accessible on your network
+1. The device hosting the API ("server.local") is accessible on your network
 2. Port 4599 is open and the API service is running
-3. The correct DNS entry exists for "mother.local" (the setup script attempts to resolve this automatically)
+3. The correct DNS entry exists for "server.local"
 
 ## Daily Usage
 
@@ -99,19 +93,19 @@ You can manage the application with the following commands:
 
 ```bash
 # Start the application
-./run.sh start
+sudo systemctl start matrix-display
 
 # Stop the application
-./run.sh stop
+sudo systemctl stop matrix-display
 
 # View the application logs
-./run.sh logs
+sudo journalctl -u matrix-display -f
 
 # Check the application status
-./run.sh status
+sudo systemctl status matrix-display
 
 # Restart the application
-./run.sh restart
+sudo systemctl restart matrix-display
 ```
 
 ## Troubleshooting Guide
@@ -123,14 +117,14 @@ If you encounter issues:
 If the application can't reach the API:
 
 ```bash
-# Test connectivity to mother.local
-ping mother.local
+# Test connectivity to server.local
+ping server.local
 
 # Check if the API endpoint is accessible
-curl -v http://mother.local:4599/trains/fg-northbound-next
+curl -v http://server.local:4599/trains/fg-northbound-next
 ```
 
-If mother.local can't be resolved, manually add it to your hosts file:
+If server.local can't be resolved, manually add it to your hosts file:
 
 ```bash
 sudo nano /etc/hosts
@@ -138,52 +132,36 @@ sudo nano /etc/hosts
 
 Add a line like:
 ```
-192.168.68.68 mother.local
+192.168.68.68 server.local
 ```
 (Replace with the actual IP address)
 
-### 2. Docker Issues
-
-If Docker isn't running properly:
-
-```bash
-# Check Docker service status
-sudo systemctl status docker
-
-# Restart Docker if needed
-sudo systemctl restart docker
-
-# Then restart the application
-./run.sh restart
-```
-
-### 3. Application Not Starting
+### 2. Application Not Starting
 
 If the application doesn't start:
 
 ```bash
-# Check for errors in the logs
-./run.sh logs
+# Check the systemd service status
+sudo systemctl status matrix-display
 
-# Make sure the container was built correctly
-sudo docker ps -a
+# Check the application logs
+sudo journalctl -u matrix-display -f
 
-# Try rebuilding the container
-sudo docker-compose down
-sudo docker-compose up -d
+# Verify the virtual environment
+source ~/matrix/venv/bin/activate
+python3 -c "import rgbmatrix"
 ```
 
-### 4. Permission Issues
+### 3. Permission Issues
 
 If you encounter permission issues:
 
 ```bash
-# Make sure both scripts are executable
-chmod +x run.sh setup.sh
+# Check the ownership of the virtual environment
+ls -l ~/matrix/venv
 
-# If Docker permission issues persist:
-sudo usermod -aG docker $USER
-# (Log out and back in for this to take effect)
+# Fix permissions if needed
+sudo chown -R $USER:$USER ~/matrix
 ```
 
 ## Advanced Configuration
@@ -201,38 +179,27 @@ Update the TRAIN_API_URL variable:
 TRAIN_API_URL=http://your-custom-server:port/your-endpoint
 ```
 
-Then update the host in docker-compose.yml:
-```bash
-nano docker-compose.yml
-```
-
-Change the extra_hosts entry to match your custom server:
-```yaml
-extra_hosts:
-  - "your-custom-server:192.168.x.x"
-```
-
 Restart the application:
 ```bash
-./run.sh restart
+sudo systemctl restart matrix-display
 ```
 
 ## Service Management
 
+The application is managed through systemd. The service file is located at `/etc/systemd/system/matrix-display.service`.
+
 ### Auto-start on Boot
 
-To configure the application to start automatically when the Raspberry Pi boots:
+The installation script will ask if you want to enable auto-start. To manage it manually:
 
+To enable auto-start:
 ```bash
-sudo cp matrix.service /etc/systemd/system/
-sudo systemctl daemon-reload
-sudo systemctl enable matrix.service
-sudo systemctl start matrix.service
+sudo systemctl enable matrix-display
 ```
 
 To disable auto-start:
 ```bash
-sudo systemctl disable matrix.service
+sudo systemctl disable matrix-display
 ```
 
 ## Support & Maintenance
@@ -246,21 +213,27 @@ To update to a new version:
 cd ~/matrix
 git pull
 
-# Rebuild and restart the container
-./run.sh restart
+# Reactivate the virtual environment
+source venv/bin/activate
+
+# Update dependencies
+pip install -r requirements.txt
+
+# Restart the service
+sudo systemctl restart matrix-display
 ```
 
-## Checking System Resources
+### Rebuilding the Virtual Environment
 
-To monitor system resources:
+If you need to rebuild the virtual environment from scratch:
 
 ```bash
-# Check disk usage
-df -h
+# Stop the service
+sudo systemctl stop matrix-display
 
-# Check memory usage
-free -m
+# Remove the old virtual environment
+rm -rf ~/matrix/venv
 
-# Check CPU usage
-top
+# Run the installation script again
+./install.sh
 ```
