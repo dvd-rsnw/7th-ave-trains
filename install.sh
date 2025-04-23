@@ -9,15 +9,6 @@ echo "======================================================================"
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 cd "$SCRIPT_DIR"
 
-# Create virtual environment if it doesn't exist
-if [ ! -d "venv" ]; then
-    echo "Creating virtual environment..."
-    python3 -m venv venv
-fi
-
-# Activate virtual environment
-source venv/bin/activate
-
 # Install system dependencies
 echo "Installing system dependencies..."
 sudo apt-get update
@@ -39,19 +30,19 @@ if [ ! -d "/tmp/rpi-rgb-led-matrix" ]; then
 fi
 
 echo "Building Python bindings for matrix..."
-(cd /tmp/rpi-rgb-led-matrix && make build-python PYTHON="$SCRIPT_DIR/venv/bin/python3")
+(cd /tmp/rpi-rgb-led-matrix && make build-python PYTHON="python3")
 
 # Install Python dependencies
 echo "Installing Python dependencies..."
-pip install --upgrade pip wheel setuptools
-pip install cython
+sudo pip3 install --upgrade pip wheel setuptools
+sudo pip3 install cython
 
 # Install project dependencies (excluding rgbmatrix)
 grep -v '^rgbmatrix' requirements.txt > requirements-nomatrix.txt
-pip install -r requirements-nomatrix.txt
+sudo pip3 install -r requirements-nomatrix.txt
 
 # Install matrix bindings
-(cd /tmp/rpi-rgb-led-matrix/bindings/python && pip install .)
+(cd /tmp/rpi-rgb-led-matrix/bindings/python && sudo pip3 install .)
 
 # Create .env file if it doesn't exist
 if [ ! -f ".env" ]; then
@@ -70,8 +61,7 @@ After=network.target
 Type=simple
 User=$USER
 WorkingDirectory=$SCRIPT_DIR
-Environment=PATH=$SCRIPT_DIR/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-ExecStart=$SCRIPT_DIR/venv/bin/python3 $SCRIPT_DIR/main.py
+ExecStart=/usr/bin/python3 $SCRIPT_DIR/main.py
 Restart=always
 RestartSec=5
 
